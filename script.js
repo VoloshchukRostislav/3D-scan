@@ -345,10 +345,11 @@ const app = {
             this.renderGallery(models);
         } catch (err) {
             this.elements.galleryGrid.innerHTML = `
-                <p style="color:var(--danger);padding:2rem;">
-                    <i class="ph ph-warning"></i> Не вдалося завантажити моделі.<br>
-                    <small>Переконайтесь, що бекенд запущено на localhost:3001</small>
-                </p>`;
+                <div style="grid-column:1/-1;text-align:center;padding:3rem;">
+                    <i class="ph ph-warning-circle text-danger" style="font-size:3rem"></i>
+                    <p class="text-danger">Не вдалося завантажити моделі.</p>
+                    <small>Переконайтесь, що сервер працює, або зачекайте хвилину (Render прокидається).</small>
+                </div>`;
             console.error('loadGallery error:', err);
         }
     },
