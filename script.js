@@ -257,14 +257,58 @@ const app = {
     },
 
     // ─── Відео-сканування (Справжня фотограмметрія) ────────────────
-    handleVideoScan(file) {
-        // Оскільки API для відео (Luma AI) ще очікує підключення ключа,
-        // показуємо повідомлення користувачеві
-        alert('Відео успішно завантажено! (Тут буде відправка на Luma AI API для генерації)');
-        
-        // Для дипломної: зберігаємо файл щоб хоча б імітувати процес
-        this.uploadedFiles = [file];
-        this.updateUploadUI();
+    async extractFrameFromVideo(videoFile) {
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.src = URL.createObjectURL(videoFile);
+            video.muted = true;
+            video.playsInline = true;
+
+            video.addEventListener('loadedmetadata', () => {
+                // Відмотуємо відео на середину, щоб взяти найкращий кадр об'єкта
+                video.currentTime = video.duration / 2 || 1; 
+            });
+
+            video.addEventListener('seeked', () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 1920;
+                canvas.height = video.videoHeight || 1080;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob((blob) => {
+                    URL.revokeObjectURL(video.src);
+                    if (blob) {
+                        const extractedFile = new File([blob], "video_frame.jpg", {
+                            type: "image/jpeg",
+                            lastModified: Date.now()
+                        });
+                        resolve(extractedFile);
+                    } else {
+                        reject(new Error('Не вдалося витягнути кадр з відео'));
+                    }
+                }, "image/jpeg", 0.95);
+            });
+
+            video.addEventListener('error', () => reject(new Error('Помилка читання відеофайлу')));
+        });
+    },
+
+    async handleVideoScan(file) {
+        this.showToast('🎥 Аналіз відео та пошук ідеального кадру...', false);
+        try {
+            this.elements.startProcessBtn.disabled = true;
+            const imageFrame = await this.extractFrameFromVideo(file);
+            
+            // Чистимо попередні файли і додаємо новий кадр
+            this.uploadedFiles = [imageFrame];
+            this.updateUploadUI();
+            
+            this.showToast('✅ Кадр успішно витягнуто! Натисніть "Почати сканування".');
+        } catch(err) {
+            alert('Помилка обробки відео: ' + err.message);
+        }
     },
 
     // ─── Processing (Реальна генерація 3D через AI) ──────────────
