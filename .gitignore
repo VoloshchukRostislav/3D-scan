@@ -1,0 +1,10 @@
+# Node.js
+node_modules/
+backend/node_modules/
+npm-debug.log
+.env
+.DS_Store
+
+# Uploaded 3D Models (We don't want to push user data to GitHub)
+backend/uploads/*
+!backend/uploads/.gitkeep

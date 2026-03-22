@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Платформа 3D-Сканування</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/814/814513.png">
+
+    <!-- Three.js & Loaders/Exporters -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Global Navigation -->
+    <nav class="navbar glass-panel">
+        <div class="logo">
+            <i class="ph ph-cube-transparent"></i>
+            <span>Scan3D</span>
+        </div>
+        <div class="nav-links">
+            <button class="nav-btn active" data-target="home-screen">Головна</button>
+            <button class="nav-btn" data-target="gallery-screen">Мої моделі</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="app-container">
+
+        <!-- 1. Home Screen -->
+        <section id="home-screen" class="screen active">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="gradient-text">Оживіть об'єкти у 3D</h1>
+                    <p>Перетворюйте фотографії на високоякісні тривимірні моделі за допомогою штучного інтелекту.</p>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary btn-large" onclick="app.navigateTo('upload-screen')">
+                            <i class="ph ph-plus-circle"></i>
+                            Створити 3D-скан
+                        </button>
+                        <button class="btn btn-secondary btn-large" onclick="app.navigateTo('gallery-screen')">
+                            <i class="ph ph-files"></i>
+                            Мої моделі
+                        </button>
+                    </div>
+                </div>
+
+                <div class="instructions glass-panel">
+                    <h3><i class="ph ph-info"></i> Як це працює</h3>
+                    <ul class="steps">
+                        <li>
+                            <div class="step-icon"><i class="ph ph-camera"></i></div>
+                            <div class="step-text">
+                                <strong>1. Зробіть фото</strong>
+                                <span>Сфотографуйте об'єкт з різних ракурсів (від 20 до 100 фото).</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="step-icon"><i class="ph ph-upload-simple"></i></div>
+                            <div class="step-text">
+                                <strong>2. Завантажте сюди</strong>
+                                <span>Додайте фотографії у систему для обробки.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="step-icon"><i class="ph ph-magic-wand"></i></div>
+                            <div class="step-text">
+                                <strong>3. Отримайте модель</strong>
+                                <span>Ми згенеруємо 3D-модель, яку можна одразу переглянути.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Photo Upload Screen -->
+        <section id="upload-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-icon btn-ghost" onclick="app.navigateTo('home-screen')">
+                    <i class="ph ph-arrow-left"></i>
+                </button>
+                <h2>Завантаження фотографій</h2>
+            </div>
+
+            <div class="upload-container glass-panel">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-content">
+                        <i class="ph ph-camera primary-glow"></i>
+                        <h3>Нове Сканування</h3>
+                        <p class="text-muted">Оберіть режим зйомки об'єкта</p>
+                        
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                            <input type="file" id="photo-input" accept="image/*" capture="environment" hidden>
+                            <button class="btn btn-primary" onclick="document.getElementById('photo-input').click()">
+                                <i class="ph ph-camera"></i> Швидке 3D (1 Фото)
+                            </button>
+                            
+                            <input type="file" id="video-input" accept="video/*" capture="environment" hidden>
+                            <button class="btn btn-secondary" onclick="document.getElementById('video-input').click()">
+                                <i class="ph ph-video-camera"></i> Детальне (Відео 360°)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-section" id="preview-section" style="display: none;">
+                    <div class="preview-header">
+                        <span id="file-count">0 фото вибрано</span>
+                        <button class="btn btn-ghost btn-small text-danger"
+                            onclick="app.clearUploads()">Очистити</button>
+                    </div>
+                    <div class="image-grid" id="image-grid">
+                        <!-- Image previews go here -->
+                    </div>
+                </div>
+
+                <div class="upload-actions">
+                    <button class="btn btn-primary w-full" id="start-process-btn" onclick="app.startProcessing()"
+                        disabled>
+                        Розпочати створення 3D-моделі
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Processing Screen -->
+        <section id="processing-screen" class="screen">
+            <div class="processing-container glass-panel center-content">
+                <div class="scanner-animation">
+                    <div class="cube-wrapper">
+                        <div class="cube">
+                            <div class="cube-face front"></div>
+                            <div class="cube-face back"></div>
+                            <div class="cube-face right"></div>
+                            <div class="cube-face left"></div>
+                            <div class="cube-face top"></div>
+                            <div class="cube-face bottom"></div>
+                        </div>
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+
+                <h2 id="processing-status" class="gradient-text">Ініціалізація...</h2>
+                <p id="processing-details" class="text-muted">Підготовка зображень для обробки</p>
+
+                <div class="progress-container mt-20">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">0%</span>
+                </div>
+
+                <div class="actions mt-30">
+                    <button class="btn btn-secondary" onclick="app.updateProcessStatus()">
+                        <i class="ph ph-arrows-clockwise"></i> Оновити статус
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 3D Model Viewer Screen -->
+        <section id="viewer-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-icon btn-ghost" onclick="app.navigateTo('gallery-screen')">
+                    <i class="ph ph-arrow-left"></i>
+                </button>
+                <h2 id="viewer-title">Перегляд моделі</h2>
+                <div class="spacer"></div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary btn-small" onclick="app.downloadModel('glb')">
+                        <i class="ph ph-download-simple"></i> .GLB
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="app.downloadModel('obj')">
+                        <i class="ph ph-download-simple"></i> .OBJ
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="app.downloadModel('stl')">
+                        <i class="ph ph-download-simple"></i> .STL
+                    </button>
+                </div>
+            </div>
+
+            <div class="viewer-container glass-panel">
+                <div id="three-canvas-container"></div>
+                <div class="viewer-controls">
+                    <div class="control-tip"><i class="ph ph-mouse-left-click"></i> Обертання</div>
+                    <div class="control-tip"><i class="ph ph-arrows-out"></i> Масштабування</div>
+                    <div class="control-tip"><i class="ph ph-mouse-right-click"></i> Переміщення</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. My Models Gallery Screen -->
+        <section id="gallery-screen" class="screen">
+            <div class="screen-header">
+                <h2>Мої моделі</h2>
+                <div style="display:flex;gap:0.5rem;align-items:center">
+                    <!-- Завантажити готовий 3D файл -->
+                    <input type="file" id="model-file-input" accept=".glb,.obj,.stl" hidden>
+                    <button class="btn btn-secondary btn-small"
+                        onclick="document.getElementById('model-file-input').click()">
+                        <i class="ph ph-upload-simple"></i> Завантажити 3D файл
+                    </button>
+                    <button class="btn btn-primary btn-small" onclick="app.navigateTo('upload-screen')">
+                        <i class="ph ph-plus"></i> Новий скан
+                    </button>
+                </div>
+            </div>
+
+            <div class="gallery-grid" id="gallery-grid">
+                <!-- Gallery items will be generated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast сповіщення про завантаження -->
+    <div id="upload-toast" style="
+        display:none;
+        position:fixed;
+        bottom:2rem;
+        right:2rem;
+        background:var(--glass-bg, rgba(30,30,60,0.95));
+        border:1px solid rgba(99,102,241,0.4);
+        color:#fff;
+        padding:1rem 1.5rem;
+        border-radius:12px;
+        font-family:inherit;
+        font-size:0.9rem;
+        z-index:9999;
+        backdrop-filter:blur(10px);
+        box-shadow:0 8px 32px rgba(0,0,0,0.3);
+        min-width:240px;
+    ">
+        <span id="upload-toast-msg">Завантаження...</span>
+    </div>
+
+    <!-- Service Worker Installer -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('ServiceWorker registered'))
+                    .catch(err => console.log('ServiceWorker error:', err));
+            });
+        }
+    </script>
+    
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+
+</html>
