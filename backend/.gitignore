@@ -1,0 +1,17 @@
+# Змінні середовища (НІКОЛИ не публікувати!)
+.env
+
+# Node.js залежності
+node_modules/
+
+# Завантажені файли моделей (опціонально, якщо не хочеш їх у git)
+uploads/*
+!uploads/.gitkeep
+
+# Логи
+*.log
+npm-debug.log*
+
+# OS файли
+.DS_Store
+Thumbs.db
