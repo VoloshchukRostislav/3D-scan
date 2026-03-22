@@ -1,7 +1,7 @@
 // ─── API Configuration ────────────────────────────────────────────
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3001/api'
-  : `http://${window.location.hostname}:3001/api`;
+  : 'https://threed-scan-server.onrender.com/api';
 
 // ─── API Helper ───────────────────────────────────────────────────
 const api = {
@@ -101,7 +101,7 @@ const api = {
     getFileUrl(filename) {
         return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? `http://localhost:3001/uploads/${filename}`
-            : `http://${window.location.hostname}:3001/uploads/${filename}`;
+            : `https://threed-scan-server.onrender.com/uploads/${filename}`;
     }
 };
 
